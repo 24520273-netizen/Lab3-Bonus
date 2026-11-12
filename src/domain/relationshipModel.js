@@ -10,6 +10,17 @@ export const EVENTS = Object.freeze({
   COMMIT: 'COMMIT',
   EXIT: 'EXIT',
   RESET: 'RESET',
+  ADD_INTERACTION: 'ADD_INTERACTION',
+})
+
+export const ACTORS = Object.freeze({
+  EM: 'EM',
+  AI_DO: 'AI_DO',
+})
+
+export const MULTIPLIERS = Object.freeze({
+  [ACTORS.EM]: 0.1,
+  [ACTORS.AI_DO]: 50,
 })
 
 const TRANSITIONS = {
@@ -40,6 +51,38 @@ export function getAvailableTransitions(phase) {
 }
 
 export function relationshipReducer(state, action) {
+  if (action?.type === EVENTS.ADD_INTERACTION) {
+    if (state.phase !== PHASES.DATING_NO_LOVE) {
+      return state
+    }
+
+    const { id, actor, steps } = action
+
+    if (
+      typeof id !== 'string' ||
+      id.trim() === '' ||
+      id !== id.trim() ||
+      !Object.hasOwn(MULTIPLIERS, actor) ||
+      !Number.isSafeInteger(steps) ||
+      steps <= 0 ||
+      state.interactions.some((item) => item.id === id)
+    ) {
+      return state
+    }
+
+    const interaction = {
+      id,
+      actor,
+      steps,
+      multiplier: MULTIPLIERS[actor],
+    }
+
+    return {
+      ...state,
+      interactions: [...state.interactions, interaction],
+    }
+  }
+
   const nextPhase = TRANSITIONS[state.phase]?.[action?.type]
 
   if (!nextPhase) {
