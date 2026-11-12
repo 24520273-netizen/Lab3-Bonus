@@ -170,3 +170,145 @@ test('score selectors do not mutate input', () => {
   assert.equal(scores.myImpact, 0.3)
   assert.equal(logs.length, 1)
 })
+
+test('ghosting message is allowed only during dating', () => {
+  const invalid = relationshipReducer(initialState, {
+    type: EVENTS.SEND_MESSAGE,
+    id: 'message-1',
+  })
+
+  assert.strictEqual(invalid, initialState)
+
+  const dating = relationshipReducer(initialState, {
+    type: EVENTS.START_DATING,
+  })
+
+  const pending = relationshipReducer(dating, {
+    type: EVENTS.SEND_MESSAGE,
+    id: 'message-1',
+  })
+
+  assert.deepEqual(pending.pendingMessage, {
+    id: 'message-1',
+  })
+
+  assert.equal(dating.pendingMessage, null)
+})
+
+test('duplicate pending messages are rejected', () => {
+  const dating = relationshipReducer(initialState, {
+    type: EVENTS.START_DATING,
+  })
+
+  const pending = relationshipReducer(dating, {
+    type: EVENTS.SEND_MESSAGE,
+    id: 'message-1',
+  })
+
+  const duplicate = relationshipReducer(pending, {
+    type: EVENTS.SEND_MESSAGE,
+    id: 'message-2',
+  })
+
+  assert.strictEqual(duplicate, pending)
+})
+
+test('reply cancels pending ghosting', () => {
+  const dating = relationshipReducer(initialState, {
+    type: EVENTS.START_DATING,
+  })
+
+  const pending = relationshipReducer(dating, {
+    type: EVENTS.SEND_MESSAGE,
+    id: 'message-1',
+  })
+
+  const replied = relationshipReducer(pending, {
+    type: EVENTS.RECEIVE_REPLY,
+    id: 'message-1',
+  })
+
+  assert.equal(replied.pendingMessage, null)
+  assert.equal(replied.phase, PHASES.DATING_NO_LOVE)
+
+  assert.strictEqual(
+    relationshipReducer(replied, {
+      type: EVENTS.GHOST_TIMEOUT,
+      id: 'message-1',
+    }),
+    replied,
+  )
+})
+
+test('valid ghost timeout ends relationship', () => {
+  const dating = relationshipReducer(initialState, {
+    type: EVENTS.START_DATING,
+  })
+
+  const pending = relationshipReducer(dating, {
+    type: EVENTS.SEND_MESSAGE,
+    id: 'message-1',
+  })
+
+  const ghosted = relationshipReducer(pending, {
+    type: EVENTS.GHOST_TIMEOUT,
+    id: 'message-1',
+  })
+
+  assert.equal(ghosted.phase, PHASES.GHOSTED_EXIT)
+  assert.equal(ghosted.pendingMessage, null)
+})
+
+test('old timeout cannot affect a new message', () => {
+  const dating = relationshipReducer(initialState, {
+    type: EVENTS.START_DATING,
+  })
+
+  const first = relationshipReducer(dating, {
+    type: EVENTS.SEND_MESSAGE,
+    id: 'old-message',
+  })
+
+  const replied = relationshipReducer(first, {
+    type: EVENTS.RECEIVE_REPLY,
+    id: 'old-message',
+  })
+
+  const second = relationshipReducer(replied, {
+    type: EVENTS.SEND_MESSAGE,
+    id: 'new-message',
+  })
+
+  const staleTimeout = relationshipReducer(second, {
+    type: EVENTS.GHOST_TIMEOUT,
+    id: 'old-message',
+  })
+
+  assert.strictEqual(staleTimeout, second)
+})
+
+test('phase changes invalidate pending messages', () => {
+  const dating = relationshipReducer(initialState, {
+    type: EVENTS.START_DATING,
+  })
+
+  const pending = relationshipReducer(dating, {
+    type: EVENTS.SEND_MESSAGE,
+    id: 'message-1',
+  })
+
+  const official = relationshipReducer(pending, {
+    type: EVENTS.COMMIT,
+  })
+
+  assert.equal(official.phase, PHASES.OFFICIAL_LOVE)
+  assert.equal(official.pendingMessage, null)
+
+  assert.strictEqual(
+    relationshipReducer(official, {
+      type: EVENTS.GHOST_TIMEOUT,
+      id: 'message-1',
+    }),
+    official,
+  )
+})

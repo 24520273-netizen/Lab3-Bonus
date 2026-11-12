@@ -1,4 +1,4 @@
-﻿import { useId, useReducer, useState } from 'react'
+﻿import { useEffect, useId, useReducer, useState } from 'react'
 import {
   ACTORS,
   EVENTS,
@@ -53,6 +53,23 @@ export default function SituationshipAnalyzer() {
   }
 
   const recentInteractions = state.interactions.slice(-5).reverse()
+
+  const pendingMessageId = state.pendingMessage?.id
+
+  useEffect(() => {
+    if (state.phase !== PHASES.DATING_NO_LOVE || !pendingMessageId) {
+      return undefined
+    }
+
+    const timeoutId = setTimeout(() => {
+      dispatch({
+        type: EVENTS.GHOST_TIMEOUT,
+        id: pendingMessageId,
+      })
+    }, 5000)
+
+    return () => clearTimeout(timeoutId)
+  }, [state.phase, pendingMessageId])
 
   return (
     <article className={styles.card} aria-labelledby="situationship-title">
@@ -180,6 +197,55 @@ export default function SituationshipAnalyzer() {
             ))}
           </ol>
         )}
+      </section>
+      <section className={styles.section} aria-labelledby="message-heading">
+        <h2 id="message-heading" className={styles.sectionHeading}>
+          Seen Không Rep
+        </h2>
+
+        <p className={styles.note}>
+          Gửi tin nhắn và chờ phản hồi trong 5 giây.
+          Nếu không có phản hồi, mối quan hệ sẽ kết thúc.
+        </p>
+
+        <div className={styles.actions}>
+          <button
+            type="button"
+            className={styles.button}
+            disabled={
+              state.phase !== PHASES.DATING_NO_LOVE ||
+              Boolean(pendingMessageId)
+            }
+            onClick={() =>
+              dispatch({
+                type: EVENTS.SEND_MESSAGE,
+                id: crypto.randomUUID(),
+              })
+            }
+          >
+            Gửi tin nhắn
+          </button>
+
+          <button
+            type="button"
+            className={styles.button}
+            disabled={!pendingMessageId}
+            onClick={() =>
+              dispatch({
+                type: EVENTS.RECEIVE_REPLY,
+                id: pendingMessageId,
+              })
+            }
+          >
+            Đã trả lời
+          </button>
+        </div>
+
+        <output className={styles.status} role="status" aria-live="polite">
+          {pendingMessageId
+            ? 'Đang chờ phản hồi trong 5 giây...'
+            : 'Không có tin nhắn đang chờ.'}
+        </output>
       </section>
     </article>
   )

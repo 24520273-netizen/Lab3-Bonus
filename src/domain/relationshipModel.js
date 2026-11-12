@@ -11,6 +11,9 @@ export const EVENTS = Object.freeze({
   EXIT: 'EXIT',
   RESET: 'RESET',
   ADD_INTERACTION: 'ADD_INTERACTION',
+  SEND_MESSAGE: 'SEND_MESSAGE',
+  RECEIVE_REPLY: 'RECEIVE_REPLY',
+  GHOST_TIMEOUT: 'GHOST_TIMEOUT',
 })
 
 export const ACTORS = Object.freeze({
@@ -83,6 +86,52 @@ export function relationshipReducer(state, action) {
     }
   }
 
+  if (action?.type === EVENTS.SEND_MESSAGE) {
+    if (
+      state.phase !== PHASES.DATING_NO_LOVE ||
+      state.pendingMessage !== null ||
+      typeof action.id !== 'string' ||
+      action.id.trim() === ''
+    ) {
+      return state
+    }
+
+    return {
+      ...state,
+      pendingMessage: { id: action.id },
+    }
+  }
+
+  if (action?.type === EVENTS.RECEIVE_REPLY) {
+    if (
+      state.phase !== PHASES.DATING_NO_LOVE ||
+      !state.pendingMessage ||
+      state.pendingMessage.id !== action.id
+    ) {
+      return state
+    }
+
+    return {
+      ...state,
+      pendingMessage: null,
+    }
+  }
+
+  if (action?.type === EVENTS.GHOST_TIMEOUT) {
+    if (
+      state.phase !== PHASES.DATING_NO_LOVE ||
+      !state.pendingMessage ||
+      state.pendingMessage.id !== action.id
+    ) {
+      return state
+    }
+
+    return {
+      ...state,
+      phase: PHASES.GHOSTED_EXIT,
+      pendingMessage: null,
+    }
+  }
   const nextPhase = TRANSITIONS[state.phase]?.[action?.type]
 
   if (!nextPhase) {

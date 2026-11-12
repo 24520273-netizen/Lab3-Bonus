@@ -319,10 +319,10 @@ UI-only state:
 
 ### Step 3 - Red Flag, Ghosting and Audit
 
-7. feat(ui): add derived red-flag meter & ghosting cleanup
-8. feat(bonus): improve responsive accessibility
-9. test(bonus): verify ghosting lifecycle and red flag behavior
-10. docs(bonus): finalize ai failure audit and submission checklist
+7. feat(bonus): implement ghosting message timeout
+8. feat(ui): add derived red-flag meter & ghosting cleanup
+9. test(bonus): verify fsm ghosting and accessibility
+10. docs(bonus): finalize ai audit and submission checklist
 
 The two slide-provided commit messages must remain unchanged.
 
