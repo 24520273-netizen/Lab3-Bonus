@@ -1,7 +1,7 @@
 ﻿# Lab 03 Bonus - Project Rules
 
 ## Project
-- Name: Lab3-Bonus
+- Name: Lab 3 - BonusExercise
 - Exercise: Hen Ho Nhung Khong Yeu State Machine
 - Framework: React 19 + Vite
 - Language: JavaScript

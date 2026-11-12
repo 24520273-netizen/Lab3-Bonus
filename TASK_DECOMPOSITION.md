@@ -341,3 +341,20 @@ Do not implement:
 - Functional interaction controls.
 
 These belong to Steps 2 and 3.
+
+## 13. Final Submission Checklist
+
+- [ ] All automated tests pass.
+- [ ] ESLint passes.
+- [ ] Production build passes.
+- [ ] Ghosting manually verified.
+- [ ] Red Flag calculation verified.
+- [ ] Responsive 375px verified.
+- [ ] Keyboard navigation verified.
+- [ ] Lighthouse report captured.
+- [ ] AI Failure Audit reviewed.
+- [ ] Submission screenshots captured.
+- [ ] Git working tree clean.
+- [ ] Final commit history reviewed.
+
+Project scope ends after Step 3.
