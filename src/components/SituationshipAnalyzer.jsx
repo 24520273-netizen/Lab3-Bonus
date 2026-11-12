@@ -7,7 +7,7 @@ import {
   initialState,
   relationshipReducer,
 } from '../domain/relationshipModel.js'
-import { calculateEffortScores } from '../domain/relationshipSelectors.js'
+import { calculateEffortScores, calculateRedFlag } from '../domain/relationshipSelectors.js'
 import styles from './SituationshipAnalyzer.module.css'
 
 const phaseLabels = {
@@ -29,9 +29,13 @@ export default function SituationshipAnalyzer() {
   const [steps, setSteps] = useState('1')
   const stepsId = useId()
   const stepsHelpId = useId()
+  const emMeterId = useId()
+  const rivalMeterId = useId()
 
   const availableTransitions = getAvailableTransitions(state.phase)
   const scores = calculateEffortScores(state.interactions)
+  const isRedFlag = calculateRedFlag(state.phase, scores)
+  const meterMax = Math.max(scores.myImpact, scores.rivalImpact, 1)
 
   const canAddEffort = state.phase === PHASES.DATING_NO_LOVE
   const parsedSteps = Number(steps)
@@ -177,6 +181,58 @@ export default function SituationshipAnalyzer() {
         </p>
       </section>
 
+      <section className={styles.section} aria-labelledby="red-flag-heading">
+        <h2 id="red-flag-heading" className={styles.sectionHeading}>
+          Red-Flag Meter
+        </h2>
+
+        <div className={styles.meterGroup}>
+          <div className={styles.meterRow}>
+            <label htmlFor={emMeterId}>
+              EM: {scores.myImpact} điểm
+            </label>
+            <meter
+              id={emMeterId}
+              className={styles.meter}
+              min="0"
+              max={meterMax}
+              value={scores.myImpact}
+            />
+          </div>
+
+          <div className={styles.meterRow}>
+            <label htmlFor={rivalMeterId}>
+              AI ĐÓ: {scores.rivalImpact} điểm
+            </label>
+            <meter
+              id={rivalMeterId}
+              className={styles.meter}
+              min="0"
+              max={meterMax}
+              value={scores.rivalImpact}
+            />
+          </div>
+        </div>
+
+        <output
+          className={styles.riskStatus}
+          data-level={
+            !canAddEffort
+              ? 'inactive'
+              : isRedFlag
+                ? 'warning'
+                : 'stable'
+          }
+          role="status"
+          aria-live="polite"
+        >
+          {!canAddEffort
+            ? 'Chưa đánh giá: Chỉ kiểm tra Red Flag khi đang hẹn hò.'
+            : isRedFlag
+              ? 'Red Flag: Điểm AI ĐÓ đang cao hơn điểm EM.'
+              : 'Stable: Điểm EM đang bằng hoặc cao hơn AI ĐÓ.'}
+        </output>
+      </section>
       <section className={styles.section} aria-labelledby="history-heading">
         <h2 id="history-heading" className={styles.sectionHeading}>
           Lịch sử tương tác
@@ -244,7 +300,11 @@ export default function SituationshipAnalyzer() {
         <output className={styles.status} role="status" aria-live="polite">
           {pendingMessageId
             ? 'Đang chờ phản hồi trong 5 giây...'
-            : 'Không có tin nhắn đang chờ.'}
+            : state.phase === PHASES.GHOSTED_EXIT
+              ? 'Quan hệ đã kết thúc. Không còn tin nhắn chờ.'
+              : state.phase === PHASES.DATING_NO_LOVE
+                ? 'Chưa có tin nhắn đang chờ.'
+                : 'Chỉ có thể gửi tin nhắn khi đang hẹn hò.'}
         </output>
       </section>
     </article>
