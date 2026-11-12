@@ -2,7 +2,7 @@
 
 ## 1. Project Overview
 
-Project: Lab3-Bonus
+Project: Lab 3 - BonusExercise
 Exercise: Hen Ho Nhung Khong Yeu State Machine
 Main component: SituationshipAnalyzer
 
@@ -101,7 +101,7 @@ OFFICIAL_LOVE:
 - EXIT -> GHOSTED_EXIT
 
 GHOSTED_EXIT:
-- No outgoing transitions
+- No outgoing transitions except an explicit RESET to FRIENDS that clears all domain data.
 
 Invalid transitions must preserve the existing state.
 
@@ -313,9 +313,9 @@ UI-only state:
 ### Step 2 - FSM and Interaction
 
 3. feat(fsm): model HenHoKhongYeu state machine
-4. feat(bonus): implement asymmetric effort reducer
-5. feat(bonus): add relationship interaction controls
-6. test(bonus): verify fsm transitions and immutable logs
+4. feat(bonus): implement immutable effort reducer
+5. feat(bonus): calculate asymmetric effort scores
+6. feat(bonus): integrate relationship interaction controls
 
 ### Step 3 - Red Flag, Ghosting and Audit
 
