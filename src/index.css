@@ -35,3 +35,7 @@ textarea {
   outline: 3px solid #2563eb;
   outline-offset: 3px;
 }
+
+main {
+  width: min(100%, 680px);
+}
